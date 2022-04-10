@@ -4,8 +4,7 @@ kind: Kustomization
 namespace: alice
 
 resources:
-# - ../s3proxy
-#- ../minio
 - ns.yaml
-# - standard
-# - premium
+- ../../test-deployments
+- ../../s3proxy/unclassified
+- ../../s3proxy/protected-b

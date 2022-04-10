@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3proxy-prob
+  labels:
+    app: s3proxy-prob
+    data.statcan.gc.ca/classification: "protected-b"
+spec:
+  selector:
+    matchLabels:
+      app: s3proxy-prob
+  template:
+    metadata:
+      annotations:
+        data.statcan.gc.ca/inject-blob-volumes: "true"
+      labels:
+        app: s3proxy-prob
+        data.statcan.gc.ca/classification: "protected-b"
+    spec:
+      #volumes:
+      #- name: data
+      #  persistentVolumeClaim:
+      #    claimName: standard
+      #- name: data-premium
+      #  persistentVolumeClaim:
+      #    claimName: premium
+      #initContainers:
+      #  - name: s3proxy-cache
+      #    image: s3proxy/s3proxy
+      #    command: ["sh"]
+      #    args:
+      #    - -c
+      #    - |
+      #        mkdir -p /data/standard/.s3proxy.sys
+      #        ln -s /data/standard/.s3proxy.sys /data/.s3proxy.sys
+      #    volumeMounts:
+      #    - name: data
+      #      mountPath: /data/
+      containers:
+        - name: main
+          image: docker.io/andrewgaul/s3proxy:sha-71541ac
+          envFrom:
+            - configMapRef:
+                name: s3proxy-config-prob
+          #volumeMounts:
+          #- name: data
+          #  mountPath: /data/standard
+          #- name: data-premium
+          #  mountPath: /data/premium
+          ports:
+            - name: http
+              containerPort: 80

@@ -10,16 +10,18 @@ spec:
       app: s3proxy
   template:
     metadata:
+      annotations:
+        data.statcan.gc.ca/inject-blob-volumes: "true"
       labels:
         app: s3proxy
     spec:
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: standard
-      - name: data-premium
-        persistentVolumeClaim:
-          claimName: premium
+      #volumes:
+      #- name: data
+      #  persistentVolumeClaim:
+      #    claimName: standard
+      #- name: data-premium
+      #  persistentVolumeClaim:
+      #    claimName: premium
       #initContainers:
       #  - name: s3proxy-cache
       #    image: s3proxy/s3proxy
@@ -38,11 +40,11 @@ spec:
           envFrom:
             - configMapRef:
                 name: s3proxy-config
-          volumeMounts:
-          - name: data
-            mountPath: /data/standard
-          - name: data-premium
-            mountPath: /data/premium
+          #volumeMounts:
+          #- name: data
+          #  mountPath: /data/standard
+          #- name: data-premium
+          #  mountPath: /data/premium
           ports:
             - name: http
               containerPort: 80

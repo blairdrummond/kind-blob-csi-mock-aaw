@@ -5,6 +5,6 @@ namespace: bob
 
 resources:
 - ns.yaml
-# - ../s3proxy/
-# - standard
-# - premium
+- ../../test-deployments
+- ../../s3proxy/unclassified
+- ../../s3proxy/protected-b

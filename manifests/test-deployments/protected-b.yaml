@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter-prob
+  labels:
+    data.statcan.gc.ca/classification: protected-b
+spec:
+  ports:
+  - name: http-port
+    port: 80
+    targetPort: 8888
+  selector:
+    notebook-name: jupyter-prob
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-prob
+  labels:
+    notebook-name: jupyter-prob
+    data.statcan.gc.ca/classification: protected-b
+spec:
+  selector:
+    matchLabels:
+      notebook-name: jupyter-prob
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        data.statcan.gc.ca/inject-blob-volumes: "true"
+      labels:
+        notebook-name: jupyter-prob
+        data.statcan.gc.ca/classification: protected-b
+    spec:
+      containers:
+      - name: jupyter
+        args:
+        - notebook
+        - --ip=0.0.0.0
+        - --no-browser
+        - --port=8888
+        - --NotebookApp.token=''
+        - --NotebookApp.password=''
+        - --NotebookApp.allow_origin='*'
+        - --NotebookApp.authenticate_prometheus=False
+        - --NotebookApp.default_url=/tree
+        command:
+        - jupyter
+        image: jupyter/minimal-notebook
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
