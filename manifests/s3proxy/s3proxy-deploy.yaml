@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3proxy
+  labels:
+    app: s3proxy
+spec:
+  selector:
+    matchLabels:
+      app: s3proxy
+  template:
+    metadata:
+      labels:
+        app: s3proxy
+    spec:
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: standard
+      - name: data-premium
+        persistentVolumeClaim:
+          claimName: premium
+      #initContainers:
+      #  - name: s3proxy-cache
+      #    image: s3proxy/s3proxy
+      #    command: ["sh"]
+      #    args:
+      #    - -c
+      #    - |
+      #        mkdir -p /data/standard/.s3proxy.sys
+      #        ln -s /data/standard/.s3proxy.sys /data/.s3proxy.sys
+      #    volumeMounts:
+      #    - name: data
+      #      mountPath: /data/
+      containers:
+        - name: main
+          image: docker.io/andrewgaul/s3proxy:sha-71541ac
+          envFrom:
+            - configMapRef:
+                name: s3proxy-config
+          volumeMounts:
+          - name: data
+            mountPath: /data/standard
+          - name: data-premium
+            mountPath: /data/premium
+          ports:
+            - name: http
+              containerPort: 80
