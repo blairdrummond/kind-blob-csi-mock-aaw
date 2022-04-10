@@ -46,8 +46,8 @@ type Instance struct {
 }
 
 var defaultInstances = `
-	{"name": "standard-rw", "classification": "unclassified", "secret": "azure-secret/azure-blob-csi-system", "capacity": "100Gi", "readOnly": false}
-	{"name": "premium-rw", "classification": "unclassified", "secret": "azure-secret-premium/azure-blob-csi-system", "capacity": "100Gi", "readOnly": false}
+	{"name": "standard", "classification": "unclassified", "secret": "azure-secret/azure-blob-csi-system", "capacity": "100Gi", "readOnly": false}
+	{"name": "premium", "classification": "unclassified", "secret": "azure-secret-premium/azure-blob-csi-system", "capacity": "100Gi", "readOnly": false}
 	{"name": "standard-ro", "classification": "protected-b", "secret": "azure-secret/azure-blob-csi-system", "capacity": "100Gi", "readOnly": true}
 	{"name": "premium-ro", "classification": "protected-b", "secret": "azure-secret-premium/azure-blob-csi-system", "capacity": "100Gi", "readOnly": true}
 `
@@ -104,6 +104,9 @@ func pvForProfile(namespace string, instance Instance) *corev1.PersistentVolume 
 				},
 			},
 			PersistentVolumeReclaimPolicy: corev1.PersistentVolumeReclaimRetain,
+			MountOptions: []string{
+				"-o allow_other",
+			},
 		},
 	}
 
