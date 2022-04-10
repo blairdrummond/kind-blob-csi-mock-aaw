@@ -4,11 +4,13 @@ KUBECTL := kubectl --context kind-$(CLUSTER)
 AZURE_BLOB_CSI_NAMESPACE := azure-blob-csi-system
 K8S_VERSION := "kindest/node:v1.19.11"
 
-install: kind-create azure-secret manifests
+KUSTOMIZE_OPTS := --load-restrictor LoadRestrictionsNone
+
+install: kind-create azure-secret push manifests
 destroy: azure-destroy kind-destroy
 
 manifests: manifests/blob-csi-driver.yaml
-	kustomize build manifests/ | $(KUBECTL) apply -f -
+	kustomize build manifests/ $(KUSTOMIZE_OPTS) | $(KUBECTL) apply -f -
 
 kind-create:
 	kind get clusters | grep -q $(CLUSTER) || \
@@ -73,6 +75,16 @@ azure-secret-fdi-unclassified: $(AZURE_DEPS)
 	$(KUBECTL) create secret generic azure-secret-fdi-unclassified -n $(AZURE_BLOB_CSI_NAMESPACE) \
 		--from-literal azurestorageaccountname=$$NAME \
 		--from-literal azurestorageaccountkey=$$KEY
+
+
+# Images
+build:
+	cd apps/blob-csi-injector && docker build . -t blob-csi-injector:latest
+	cd apps/create-pvc        && docker build . -t create-pvc:latest
+
+push: build
+	kind load docker-image blob-csi-injector:latest --name $(CLUSTER)
+	kind load docker-image create-pvc:latest        --name $(CLUSTER)
 
 
 
