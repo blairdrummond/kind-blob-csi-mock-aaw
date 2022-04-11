@@ -76,6 +76,19 @@ func pvForProfile(namespace string, instance Instance) *corev1.PersistentVolume 
 	volumeName := pvVolumeName(namespace, instance)
 	secretName, secretNamespace := parseSecret(instance.Secret)
 
+	var accessMode corev1.PersistentVolumeAccessMode
+	mountOptions := []string{
+		// https://github.com/Azure/azure-storage-fuse/issues/496#issuecomment-704406829
+		"-o allow_other",
+	}
+	if instance.ReadOnly {
+		accessMode = corev1.ReadOnlyMany
+		// Doesn't work.
+		mountOptions = append(mountOptions, "-o ro")
+	} else {
+		accessMode = corev1.ReadWriteMany
+	}
+
 	pv := &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: volumeName,
@@ -85,7 +98,7 @@ func pvForProfile(namespace string, instance Instance) *corev1.PersistentVolume 
 			},
 		},
 		Spec: corev1.PersistentVolumeSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany},
+			AccessModes: []corev1.PersistentVolumeAccessMode{accessMode},
 			Capacity: corev1.ResourceList{
 				corev1.ResourceStorage: capacity,
 			},
@@ -104,8 +117,11 @@ func pvForProfile(namespace string, instance Instance) *corev1.PersistentVolume 
 				},
 			},
 			PersistentVolumeReclaimPolicy: corev1.PersistentVolumeReclaimRetain,
-			MountOptions: []string{
-				"-o allow_other",
+			MountOptions:                  mountOptions,
+			// https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reserving-a-persistentvolume
+			ClaimRef: &corev1.ObjectReference{
+				Name:      instance.Name,
+				Namespace: namespace,
 			},
 		},
 	}
@@ -119,6 +135,13 @@ func pvcForProfile(namespace string, instance Instance) *corev1.PersistentVolume
 	volumeName := pvVolumeName(namespace, instance)
 	storageClass := ""
 
+	var accessMode corev1.PersistentVolumeAccessMode
+	if instance.ReadOnly {
+		accessMode = corev1.ReadOnlyMany
+	} else {
+		accessMode = corev1.ReadWriteMany
+	}
+
 	pvc := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name,
@@ -129,7 +152,7 @@ func pvcForProfile(namespace string, instance Instance) *corev1.PersistentVolume
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany},
+			AccessModes: []corev1.PersistentVolumeAccessMode{accessMode},
 			Resources: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
 					corev1.ResourceStorage: capacity,
@@ -241,11 +264,13 @@ func main() {
 
 		// First, branch off of the service client and create a container client.
 		for _, instance := range instances {
-			client, err := getBlobClient(clientset, instance)
-			if err != nil {
-				panic(err.Error())
+			if !instance.ReadOnly {
+				client, err := getBlobClient(clientset, instance)
+				if err != nil {
+					panic(err.Error())
+				}
+				blobClients[instance.Name] = client
 			}
-			blobClients[instance.Name] = client
 		}
 
 		// TODO: Replace with with actual profile logic
@@ -265,15 +290,16 @@ func main() {
 			}
 
 			for _, instance := range instances {
-
-				fmt.Printf("Creating Container %s/%s... ", instance.Name, profile)
-				err := createContainer(blobClients[instance.Name], profile)
-				if err == nil {
-					fmt.Println("Succeeded.")
-				} else if strings.Contains(err.Error(), "ContainerAlreadyExists") {
-					fmt.Println("Already Exists.")
-				} else {
-					fmt.Println(err.Error())
+				if !instance.ReadOnly {
+					fmt.Printf("Creating Container %s/%s... ", instance.Name, profile)
+					err := createContainer(blobClients[instance.Name], profile)
+					if err == nil {
+						fmt.Println("Succeeded.")
+					} else if strings.Contains(err.Error(), "ContainerAlreadyExists") {
+						fmt.Println("Already Exists.")
+					} else {
+						fmt.Println(err.Error())
+					}
 				}
 
 				// Create a new PV?
