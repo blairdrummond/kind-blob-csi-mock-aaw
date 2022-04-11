@@ -29,10 +29,29 @@ spec:
       labels:
         notebook-name: jupyter
     spec:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+      volumes:
+      - name: mc-download
+        emptyDir: {}
+      - name: mc-files
+        emptyDir: {}
+      initContainers:
+      - name: mc
+        image: minio/mc
+        command: ["sh"]
+        args:
+        - -c
+        - |
+            cp /usr/bin/mc /home/jovyan/bin/
+            mc -C /home/jovyan/.mc config host add s3proxy \
+                http://s3proxy local-identity local-credential
+            mc -C /home/jovyan/.mc config host add s3proxy-prob \
+                http://s3proxy-prob local-identity local-credential
+            chown -R 1000:1000 /home/jovyan/bin/ /home/jovyan/.mc
+        volumeMounts:
+        - name: mc-download
+          mountPath: /home/jovyan/bin
+        - name: mc-files
+          mountPath: /home/jovyan/.mc
       containers:
       - name: jupyter
         args:
@@ -51,3 +70,8 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8888
+        volumeMounts:
+        - name: mc-download
+          mountPath: /home/jovyan/bin
+        - name: mc-files
+          mountPath: /home/jovyan/.mc
