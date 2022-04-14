@@ -6,3 +6,5 @@ resources:
 - https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
 - https://raw.githubusercontent.com/open-policy-agent/gatekeeper/release-3.7/deploy/gatekeeper.yaml
 - ./daaas-system/
+- gatekeeper-config.yaml
+- gatekeeper
