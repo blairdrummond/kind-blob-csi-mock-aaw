@@ -34,7 +34,7 @@ spec:
           #  mountPath: /data/premium
 
         - name: nginx
-          image: docker.io/nginxinc/nginx-unprivileged:latest
+          image: docker.io/nginxinc/nginx-unprivileged:1.21-alpine
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
