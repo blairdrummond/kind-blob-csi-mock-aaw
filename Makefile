@@ -6,8 +6,11 @@ K8S_VERSION := "kindest/node:v1.19.11"
 
 KUSTOMIZE_OPTS := --load-restrictor LoadRestrictionsNone
 
-install: kind-create azure-secret push manifests
+install: kind-create azure-secret push profile-crd manifests
 destroy: azure-destroy kind-destroy
+
+profile-crd:
+	$(KUBECTL) apply -f https://raw.githubusercontent.com/kubeflow/kubeflow/master/components/profile-controller/config/crd/bases/kubeflow.org_profiles.yaml
 
 manifests: manifests/blob-csi-driver.yaml
 	kustomize build manifests/ $(KUSTOMIZE_OPTS) | $(KUBECTL) apply -f -

@@ -6,5 +6,6 @@ namespace: alice
 resources:
 - ns.yaml
 - ../../test-deployments
-- ../../s3proxy/unclassified
+# - ../../s3proxy/unclassified
+- ../../s3proxy/fancy
 - ../../s3proxy/protected-b

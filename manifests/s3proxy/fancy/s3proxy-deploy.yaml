@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3proxy
+  labels:
+    app: s3proxy
+spec:
+  selector:
+    matchLabels:
+      app: s3proxy
+  template:
+    metadata:
+      annotations:
+        data.statcan.gc.ca/inject-blob-volumes: "true"
+      labels:
+        app: s3proxy
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: s3proxy
+          image: docker.io/andrewgaul/s3proxy:sha-71541ac
+          envFrom:
+            - configMapRef:
+                name: s3proxy-config
+          ports:
+            - name: http
+              containerPort: 9000
+          #volumeMounts:
+          #- name: data
+          #  mountPath: /data/standard
+          #- name: data-premium
+          #  mountPath: /data/premium
+
+        - name: nginx
+          image: docker.io/nginxinc/nginx-unprivileged:latest
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: aws-js-explorer
+              mountPath: /etc/nginx/html/s3/
+          ports:
+            - name: http
+              containerPort: 8080
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: s3proxy-nginx-conf
+        - name: aws-js-explorer
+          configMap:
+            name: s3proxy-aws-js-explorer

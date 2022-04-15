@@ -16,6 +16,7 @@ const injectionLabel = "data.statcan.gc.ca/inject-blob-volumes"
 const automountLabel = "blob.aaw.statcan.gc.ca/automount"
 const classificationLabel = "data.statcan.gc.ca/classification"
 
+// TODO: make sure the PV & PVCs are not in terminating state.
 func (s *server) getBinds(pod v1.Pod) ([]v1.PersistentVolumeClaim, error) {
 
 	// classificationLabel: "protected-b",
