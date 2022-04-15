@@ -17,11 +17,13 @@ data:
           server_name  _;
 
           location ~ ^/(index.html|explorer.css|explorer.js)$ {
+              include  /etc/nginx/mime.types;
               root   html;
               index  index.html index.htm;
           }
 
           location ~ ^/s3/(|index.html|explorer.css|explorer.js)$ {
+              include  /etc/nginx/mime.types;
               root   html;
               index  index.html index.htm;
           }

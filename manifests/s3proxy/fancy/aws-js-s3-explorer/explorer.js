@@ -164,7 +164,7 @@ function SharedService($rootScope) {
         $.fn.dataTableExt.afnFiltering.length = 0;
 
         // AWS.config.update(settings.cred);
-        // AWS.config.update({ region: settings.region });
+        AWS.config.update({ region: "" });
         AWS.config.update(Object.assign(settings.cred, { 
             region: settings.region,
             ep: document.location.hostname
@@ -869,48 +869,12 @@ function InfoController($scope) {
 
     $scope.getBucketPolicy = (Bucket) => {
         const params = { Bucket };
-        $scope.info.policy = null;
-        DEBUG.log('call getBucketPolicy:', Bucket);
-
-        new AWS.S3(AWS.config).getBucketPolicy(params, (err, data) => {
-            let text;
-            if (err && err.code === 'NoSuchBucketPolicy') {
-                DEBUG.log(err);
-                text = 'No bucket policy.';
-            } else if (err) {
-                DEBUG.log(err);
-                text = JSON.stringify(err);
-            } else {
-                DEBUG.log(data.Policy);
-                $scope.info.policy = data.Policy;
-                DEBUG.log('Info:', $scope.info);
-                text = JSON.stringify(JSON.parse(data.Policy.trim()), null, 2);
-            }
-            $('#info-policy').text(text);
-        });
+        $scope.info.policy = 'No bucket policy';
     };
 
     $scope.getBucketCors = (Bucket) => {
         const params = { Bucket };
-        $scope.info.cors = null;
-        DEBUG.log('call getBucketCors:', Bucket);
-
-        new AWS.S3(AWS.config).getBucketCors(params, (err, data) => {
-            let text;
-            if (err && err.code === 'NoSuchCORSConfiguration') {
-                DEBUG.log(err);
-                text = 'This bucket has no CORS configuration.';
-            } else if (err) {
-                DEBUG.log(err);
-                text = JSON.stringify(err);
-            } else {
-                DEBUG.log(data.CORSRules);
-                [$scope.info.cors] = data.CORSRules;
-                DEBUG.log('Info:', $scope.info);
-                text = JSON.stringify(data.CORSRules, null, 2);
-            }
-            $('#info-cors').text(text);
-        });
+        $scope.info.cors = 'This bucket has no CORS configuration.';
     };
 }
 
@@ -926,10 +890,10 @@ function SettingsController($scope, SharedService) {
     // Initialized for an unauthenticated user exploring the current bucket
     // TODO: calculate current bucket and initialize below
     $scope.settings = {
-        auth: 'anon', region: '', bucket: '', entered_bucket: '', selected_bucket: '', view: 'folder', delimiter: '/', prefix: '',
+        auth: 'auth', region: '', bucket: '', entered_bucket: '', selected_bucket: '', view: 'folder', delimiter: '/', prefix: '',
     };
     $scope.settings.mfa = { use: 'no', code: '' };
-    $scope.settings.cred = { accessKeyId: '', secretAccessKey: '', sessionToken: '' };
+    $scope.settings.cred = { accessKeyId: 'local-identity', secretAccessKey: 'local-credential', sessionToken: '' };
     $scope.settings.stscred = null;
 
     // TODO: at present the Settings dialog closes after credentials have been supplied

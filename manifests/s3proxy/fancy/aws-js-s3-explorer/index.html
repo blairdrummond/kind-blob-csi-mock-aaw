@@ -51,6 +51,7 @@ permissions and limitations under the License.
                                 <div class="panel panel-default">
                                     <div class="panel-body">
                                         <p><b>Bucket</b>: Please indicate which region and S3 bucket you want to explore.</p>
+                                        <!--
                                         <div class="input-group bottom-marg-10">
                                             <span class="input-group-addon">Region</span>
                                             <select name="region" class="form-control" ng-model="settings.region">
@@ -73,18 +74,25 @@ permissions and limitations under the License.
                                                 <option value="us-west-2">US West (Oregon)</option>
                                             </select>
                                         </div>
+                                        -->
+                                        <!--
                                         <div class="input-group bottom-marg-10" ng-show="settings.buckets.length">
                                             <span class="input-group-addon">Bucket</span>
                                             <select name="bucketlist" class="form-control" ng-model="settings.selected_bucket" placeholder="bucket" ng-required="buckets.length">
-                                                <!-- <option value="" disabled selected>Select a bucket ...</option> -->
                                                 <option ng-repeat="bucket in settings.buckets" value="{{bucket}}">{{bucket}}</option>
-                                                <option value="">Other ...</option>
+                                                <option value="standard">Standard</option>
+                                                <option value="premium">Premium</option>
                                             </select>
                                         </div>
-                                        <div class="input-group bottom-marg-10" ng-hide="settings.buckets.length && settings.selected_bucket!=''">
+                                        -->
+                                        <div class="input-group bottom-marg-10">
                                             <span class="input-group-addon">Bucket</span>
-                                            <input name="bucket" ng-model="settings.entered_bucket" type="text" class="form-control" placeholder="bucket" ng-required="!buckets.length"/>
+                                            <select name="bucketlist" class="form-control" ng-model="settings.entered_bucket" placeholder="bucket" ng-required="buckets.length">
+                                                <option value="standard">Standard</option>
+                                                <option value="premium">Premium</option>
+                                            </select>
                                         </div>
+                                        <!--
                                         <p><b>Authentication</b>: Please provide any credentials needed to access the bucket.</p>
                                         <div class="input-group bottom-marg-10">
                                             <span class="input-group-addon">Authentication</span>
@@ -118,6 +126,8 @@ permissions and limitations under the License.
                                             <span class="input-group-addon">MFA Code</span>
                                             <input name="token" type="text" ng-model="settings.mfa.code" class="form-control" ng-disabled="settings.mfa.use=='no'" placeholder="MFA code" required/>
                                         </div>
+                                        -->
+                                        <br>
                                         <p><b>Options</b>: S3 Explorer can show your S3 bucket contents folder-by-folder or it can show
                                         a flat view of the entire bucket. Also, if you want to start in a folder that is not the root folder then enter the initial prefix below, for example <i>songs/</i>.</p>
                                         <div class="input-group bottom-marg-10">
@@ -188,6 +198,7 @@ permissions and limitations under the License.
     </div>
 
     <!-- Info dialog -->
+    <!-- 
     <div id="InfoModal" class="modal fade" ng-controller="InfoController" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -292,6 +303,7 @@ Please see the project <a target="_blank" href="https://github.com/awslabs/aws-j
             </div>
         </div>
     </div>
+-->
 
     <!-- Trash modal -->
     <div id="TrashModal" class="modal fade" ng-controller="TrashController" tabindex="-1">
@@ -487,7 +499,7 @@ Please see the project <a target="_blank" href="https://github.com/awslabs/aws-j
                                     <span id="bucket-plus" style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" ng-hide="!view.settings" title="New folder" data-target="#AddFolderModal" data-toggle="modal"></span>
                                     <span id="bucket-upload" style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" ng-hide="!view.settings" ng-click="upload()" title="Upload files"></span>
                                     <span id="bucket-trash" style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" title="Delete {{view.keys_selected.length}} selected object(s)" ng-hide="!view.settings || !view.keys_selected.length" ng-disabled="!view.keys_selected.length" ng-click="trash()"></span>
-                                    <span id="bucket-info" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" title="Info" data-target="#InfoModal" data-toggle="modal"></span>
+                                    <!-- <span id="bucket-info" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" title="Info" data-target="#InfoModal" data-toggle="modal"></span> -->
                                     <span id="bucket-loader" style="cursor: pointer;" class="btn fa fa-sync fa-2x" ng-hide="!view.settings" ng-click="refresh()" title="Refresh"></span>
                                     <span id="bucket-settings" style="cursor: pointer;" class="btn fa fa-cog fa-2x" title="Settings" data-target="#SettingsModal" data-toggle="modal"></span>
                                 </div>
