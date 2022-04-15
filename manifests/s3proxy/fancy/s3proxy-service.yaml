@@ -19,7 +19,6 @@ metadata:
   labels:
     app: s3proxy-web
 spec:
-  type: LoadBalancer
   selector:
     app: s3proxy
   ports:
