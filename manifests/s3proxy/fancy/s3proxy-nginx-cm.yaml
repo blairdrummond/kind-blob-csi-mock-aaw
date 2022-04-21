@@ -22,13 +22,15 @@ data:
               index  index.html index.htm;
           }
 
-          location ~ ^/s3/(|index.html|explorer.css|explorer.js)$ {
+          location ~ ^/s3/(index.html|explorer.css|explorer.js)$ {
               include  /etc/nginx/mime.types;
               root   html;
               index  index.html index.htm;
           }
 
-          location / {
+          location /s3/ {
+             rewrite /s3/(.*) /$1 break;
+
              proxy_set_header X-Real-IP $remote_addr;
              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
              proxy_set_header X-Forwarded-Proto $scheme;

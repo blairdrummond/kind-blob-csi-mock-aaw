@@ -27,12 +27,11 @@ spec:
           ports:
             - name: http
               containerPort: 9000
-          #volumeMounts:
-          #- name: data
-          #  mountPath: /data/standard
-          #- name: data-premium
-          #  mountPath: /data/premium
-
+          volumeMounts:
+          - name: data-standard
+            mountPath: /home/jovyan/buckets/standard
+          - name: data-premium
+            mountPath: /home/jovyan/buckets/premium
         - name: nginx
           image: docker.io/nginxinc/nginx-unprivileged:1.21-alpine
           volumeMounts:
@@ -51,3 +50,9 @@ spec:
         - name: aws-js-explorer
           configMap:
             name: s3proxy-aws-js-explorer
+        - name: data-standard
+          persistentVolumeClaim:
+            claimName: standard
+        - name: data-premium
+          persistentVolumeClaim:
+            claimName: premium
