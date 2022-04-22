@@ -115,7 +115,7 @@ function path2short(path, escape = false) {
 // Virtual-hosted-style URL, ex: https://mybucket1.s3.amazonaws.com/index.html
 function object2hrefvirt(bucket, key, escape = false) {
     const enckey = key.split('/').map(x => encodeURIComponent(x)).join('/');
-    const rc = `${document.location.protocol}//${document.location.host}/${bucket}/${enckey}`;
+    const rc = `${document.location.protocol}//${document.location.host}${document.location.pathname.replace('/index.html','')}/${bucket}/${enckey}`;
     return escape ? htmlEscape(rc) : rc;
 }
 
@@ -123,7 +123,7 @@ function object2hrefvirt(bucket, key, escape = false) {
 // eslint-disable-next-line no-unused-vars
 function object2hrefpath(bucket, key, escape = false) {
     const enckey = key.split('/').map(x => encodeURIComponent(x)).join('/');
-    const rc = `${document.location.protocol}//${document.location.host}/${bucket}/${enckey}`;
+    const rc = `${document.location.protocol}//${document.location.host}${document.location.pathname.replace('/index.html','')}/${bucket}/${enckey}`;
     return escape ? htmlEscape(rc) : rc;
 }
 
@@ -142,6 +142,7 @@ function SharedService($rootScope) {
     DEBUG.log('SharedService init');
 
     const shared = {
+        // settings: null, viewprefix: null, skew: true, auth: "anon",
         settings: null, viewprefix: null, skew: true,
     };
 
@@ -164,10 +165,10 @@ function SharedService($rootScope) {
         $.fn.dataTableExt.afnFiltering.length = 0;
 
         // AWS.config.update(settings.cred);
-        AWS.config.update({ region: "" });
+        AWS.config.update({ region: "us-east-1" });
         AWS.config.update(Object.assign(settings.cred, { 
             region: settings.region,
-            ep: document.location.hostname
+            ep: `${document.location.hostname}${document.location.pathname.replace('/index.html','/')}`
         }));
 
         if (this.skew) {
@@ -314,7 +315,7 @@ function ViewController($scope, SharedService) {
         } else {
             // Authenticated user has clicked on an object so create pre-signed
             // URL and download it in new window/tab
-            const s3 = new AWS.S3({endpoint: `${document.location.protocol}//${document.location.hostname}`});
+		const s3 = new AWS.S3({endpoint: `${document.location.protocol}//${document.location.hostname}${document.location.pathname.replace('/index.html','')}`});
             const params = {
                 Bucket: $scope.view.settings.bucket, Key: target.dataset.s3key, Expires: 15,
             };
@@ -890,7 +891,7 @@ function SettingsController($scope, SharedService) {
     // Initialized for an unauthenticated user exploring the current bucket
     // TODO: calculate current bucket and initialize below
     $scope.settings = {
-        auth: 'auth', region: '', bucket: '', entered_bucket: '', selected_bucket: '', view: 'folder', delimiter: '/', prefix: '',
+        auth: 'auth', region: 'us-east-1', bucket: '', entered_bucket: '', selected_bucket: '', view: 'folder', delimiter: '/', prefix: '',
     };
     $scope.settings.mfa = { use: 'no', code: '' };
     $scope.settings.cred = { accessKeyId: 'local-identity', secretAccessKey: 'local-credential', sessionToken: '' };
@@ -1430,9 +1431,9 @@ $(document).ready(() => {
     DEBUG.log('Version jQuery', $.fn.jquery);
 
     // Default AWS region and v4 signature
-    AWS.config.update({ region: '' });
+    AWS.config.update({ region: 'us-east-1' });
     AWS.config.update({ signatureVersion: 'v4' });
-    AWS.config.update({ endpoint: `${document.location.protocol}//${document.location.host}`});
+	AWS.config.update({ endpoint: `${document.location.protocol}//${document.location.host}${document.location.pathname.replace('/index.html','')}`});
     AWS.config.update({ s3ForcePathStyle: true });
 
 
