@@ -17,6 +17,8 @@ kind-create:
 	kind get clusters | grep -q $(CLUSTER) || \
 		kind create cluster --name $(CLUSTER) --image $(K8S_VERSION)
 
+	sleep 30
+
 	if kind get clusters | grep -q $(CLUSTER); then \
 	  CID=$$(docker ps | grep $(CLUSTER)-control-plane | awk '{print $$1}'); \
 	  docker exec $${CID} sh -c 'apt-get install libcurl3-gnutls || true'; \

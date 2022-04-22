@@ -5,7 +5,7 @@ metadata:
   namespace: kubeflow
 spec:
   selector:
-    istio: ingressgateway
+    istio: ingress
   servers:
   - hosts:
     - kubeflow.aaw.cloud.statcan.ca

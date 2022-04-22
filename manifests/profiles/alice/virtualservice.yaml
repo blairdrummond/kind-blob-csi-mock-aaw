@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: s3proxy-web
+spec:
+  gateways:
+  - kubeflow/kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /s3/alice/
+    name: s3proxy
+    rewrite:
+      uri: /s3/
+    route:
+    - destination:
+        host: s3proxy-web.alice.svc.cluster.local
+        port:
+          number: 80
+    timeout: 300s
+  - match:
+    - uri:
+        prefix: /s3/
+      queryParams:
+        ns:
+          exact: alice
+    name: s3proxy
+    redirect:
+      uri: /s3/alice/index.html

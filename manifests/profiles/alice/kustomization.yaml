@@ -5,6 +5,7 @@ namespace: alice
 
 resources:
 - ns.yaml
+- virtualservice.yaml
 - ../../test-deployments
 # - ../../s3proxy/unclassified
 - ../../s3proxy/fancy
