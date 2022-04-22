@@ -3,6 +3,7 @@ KUBECTL := kubectl --context kind-$(CLUSTER)
 
 AZURE_BLOB_CSI_NAMESPACE := azure-blob-csi-system
 K8S_VERSION := "kindest/node:v1.19.11"
+ISTIO_VERSION := "1.12.6"
 
 KUSTOMIZE_OPTS := --load-restrictor LoadRestrictionsNone
 
@@ -12,22 +13,33 @@ destroy: azure-destroy kind-destroy
 profile-crd:
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/kubeflow/kubeflow/master/components/profile-controller/config/crd/bases/kubeflow.org_profiles.yaml
 
-manifests: manifests/blob-csi-driver.yaml
-	kustomize build manifests/ $(KUSTOMIZE_OPTS) | $(KUBECTL) apply -f -
-
 kind-create:
 	kind get clusters | grep -q $(CLUSTER) || \
 		kind create cluster --name $(CLUSTER) --image $(K8S_VERSION)
 
-	kind get clusters | grep -q $(CLUSTER) || \
-	CID=$$(docker ps | grep $(CLUSTER)-control-plane | awk '{print $$1}') \
-	docker exec $(CID) sh -c 'apt-get install libcurl3-gnutls'
-
+	if kind get clusters | grep -q $(CLUSTER); then \
+	  CID=$$(docker ps | grep $(CLUSTER)-control-plane | awk '{print $$1}'); \
+	  docker exec $${CID} sh -c 'apt-get install libcurl3-gnutls || true'; \
+	fi
 
 # Blob CSI
 helm-setup:
 	helm repo add blob-csi-driver \
 		https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/charts || true
+
+	helm repo add istio https://istio-release.storage.googleapis.com/charts || true
+
+ISTIO := manifests/platform/istio/istio.yaml
+ISTIO += manifests/platform/istio/istiod.yaml
+ISTIO += manifests/platform/istio/ingress.yaml
+manifests/platform/istio/istio.yaml: helm-setup
+	helm template istio-base istio/base --version $(ISTIO_VERSION) --include-crds -n istio-system > $@
+
+manifests/platform/istio/istiod.yaml: helm-setup
+	helm template istiod istio/istiod --version $(ISTIO_VERSION) --set global.jwtPolicy=first-party-jwt -n istio-system > $@
+
+manifests/platform/istio/ingress.yaml: helm-setup
+	helm template istio-ingress istio/gateway --version $(ISTIO_VERSION) -n istio-system > $@
 
 manifests/blob-csi-driver.yaml: helm-setup
 	mkdir -p $$(dirname $@)
@@ -36,6 +48,10 @@ manifests/blob-csi-driver.yaml: helm-setup
 		--set node.enableBlobfuseProxy=true \
 		--namespace kube-system \
 		--version v1.9.0 > $@
+
+manifests: manifests/blob-csi-driver.yaml $(ISTIO)
+	kustomize build manifests/ $(KUSTOMIZE_OPTS) | $(KUBECTL) apply -f -
+
 
 terraform/terraform.tfstate:
 	cd terraform; \

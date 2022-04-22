@@ -8,3 +8,4 @@ resources:
 - ./daaas-system/
 - gatekeeper-config.yaml
 - gatekeeper
+- istio

@@ -1,0 +1,11 @@
+# ----------------------------------------------------
+# apiVersion and kind of Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - istio.yaml
+  - istiod.yaml
+  - ingress.yaml
+  - gateway.yaml
