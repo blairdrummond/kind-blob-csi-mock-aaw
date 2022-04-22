@@ -8,24 +8,63 @@ spec:
   hosts:
   - '*'
   http:
+  # index.html
   - match:
     - uri:
-        prefix: /s3/alice/
-    name: s3proxy
+        exact: /s3/alice/index.html
+    name: s3proxy-web
     rewrite:
-      uri: /s3/
+      uri: /s3/index.html
     route:
     - destination:
         host: s3proxy-web.alice.svc.cluster.local
         port:
           number: 80
+  # explorer.js
+  - match:
+    - uri:
+        exact: /s3/alice/explorer.js
+    rewrite:
+      uri: /s3/explorer.js
+    name: s3proxy-web
+    route:
+    - destination:
+        host: s3proxy-web.alice.svc.cluster.local
+        port:
+          number: 80
+  # explorer.css
+  - match:
+    - uri:
+        exact: /s3/alice/explorer.css
+    rewrite:
+      uri: /s3/explorer.css
+    name: s3proxy-web
+    route:
+    - destination:
+        host: s3proxy-web.alice.svc.cluster.local
+        port:
+          number: 80
+  # s3proxy
+  - match:
+    - uri:
+        prefix: /s3/alice/
+    name: s3proxy
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: s3proxy.alice.svc.cluster.local
+        port:
+          number: 80
     timeout: 300s
+
+  # redirect to index.html
   - match:
     - uri:
         prefix: /s3/
       queryParams:
         ns:
           exact: alice
-    name: s3proxy
+    name: s3proxy-redirect
     redirect:
       uri: /s3/alice/index.html

@@ -5,6 +5,7 @@ metadata:
   labels:
     app: s3proxy
 data:
+  LOG_LEVEL: trace
   #S3PROXY_AUTHORIZATION: "none"
   S3PROXY_CORS_ALLOW_ALL: "true"
   S3PROXY_ENDPOINT: "http://0.0.0.0:9000"
