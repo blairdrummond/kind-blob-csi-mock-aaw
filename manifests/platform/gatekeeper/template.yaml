@@ -17,6 +17,7 @@ spec:
           # Binding to an statically provisioned PV
           pvc := input.review.object
           pvc.kind == "PersistentVolumeClaim"
+          # This is because we are statically provisioning PVs instead of getting a storage pool cookiecutter
           pvc.spec.storageClassName == ""
 
           # Check volume is in the inventory
